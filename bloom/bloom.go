@@ -30,7 +30,7 @@ type Filter struct {
 
 func NewFilter(expectedNumElements int, bitArraySize int, hashFunction HashFunction) *Filter {
 	bitArray := make([]bool, bitArraySize)
-	numHashFunctions := int(math.Round(float64(bitArraySize) / float64(expectedNumElements) * math.Log(2)))
+	numHashFunctions := int(float64(bitArraySize) / float64(expectedNumElements) * math.Log(2))
 	return &Filter{
 		bitArray:            bitArray,
 		numHashFunctions:    numHashFunctions,
@@ -41,13 +41,6 @@ func NewFilter(expectedNumElements int, bitArraySize int, hashFunction HashFunct
 
 func NewFilterWithDefaultHash(expectedNumElements int, bitArraySize int) *Filter {
 	return NewFilter(expectedNumElements, bitArraySize, &DefaultHash{})
-}
-
-func CalculateArraySize(expectedNumElements int, falsePositiveProbability float64) (int, error) {
-	if falsePositiveProbability > 1 || falsePositiveProbability <= 0 {
-		return 0, errors.New("falsePositiveProbability must be greater than 0 and smaller than 1")
-	}
-	return int(math.Ceil(-1 * (float64(expectedNumElements) * math.Log(falsePositiveProbability)) / math.Pow(math.Log(2), 2))), nil
 }
 
 func (filter *Filter) AddToFilter(s string) {
@@ -62,14 +55,25 @@ func (filter *Filter) AddToFilter(s string) {
 }
 
 func (filter *Filter) Check(s string) bool {
+	if filter.hashFunction == nil {
+		panic("hashFunction is nil")
+	}
 	for i := 0; i < filter.numHashFunctions; i++ {
-		if filter.bitArray[filter.hashFunction.Hash(fmt.Sprintf("%d%s", i, s))%uint32(len(filter.bitArray))] == false {
+		hash := filter.hashFunction.Hash(fmt.Sprintf("%d%s", i, s))
+		index := hash % uint32(len(filter.bitArray))
+		if !filter.bitArray[index] {
 			return false
 		}
 	}
 	return true
 }
 
+func CalculateArraySize(expectedNumElements int, falsePositiveProbability float64) (int, error) {
+	if falsePositiveProbability > 1 || falsePositiveProbability <= 0 {
+		return 0, errors.New("falsePositiveProbability must be greater than 0 and smaller than 1")
+	}
+	return int(math.Ceil(-1 * (float64(expectedNumElements) * math.Log(falsePositiveProbability)) / math.Pow(math.Log(2), 2))), nil
+}
 func (filter *Filter) GetFalsePositiveProbability() float64 {
 	k := float64(filter.numHashFunctions)
 	n := float64(filter.expectedNumElements)

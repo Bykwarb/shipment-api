@@ -5,7 +5,12 @@ import (
 	"task/shipments"
 )
 
+func init() {
+
+}
 func main() {
-	c := shipments.GenerateBarcode("Tokyo", "Ghoul")
-	fmt.Println(c)
+	s := shipments.NewShipment("Bogdan", "Valera228", "BOMBASS", "Abebrus")
+	s.GenerateBarcode()
+	fmt.Println(s.Barcode)
+	fmt.Println(s)
 }
