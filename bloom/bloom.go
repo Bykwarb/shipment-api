@@ -1,6 +1,7 @@
 package bloom
 
 import (
+	"errors"
 	"fmt"
 	"math"
 )
@@ -8,6 +9,18 @@ import (
 type HashFunction interface {
 	Hash(s string) uint32
 }
+
+type DefaultHash struct {
+}
+
+func (*DefaultHash) Hash(s string) uint32 {
+	hash := uint32(2166136261)
+	for i := 0; i < len(s); i++ {
+		hash = (hash * 16777619) ^ uint32(s[i])
+	}
+	return hash
+}
+
 type Filter struct {
 	bitArray            []bool
 	numHashFunctions    int
@@ -26,15 +39,21 @@ func NewFilter(expectedNumElements int, bitArraySize int, hashFunction HashFunct
 	}
 }
 
-func (*Filter) HashFunc(s string) uint32 {
-	hash := uint32(2166136261)
-	for i := 0; i < len(s); i++ {
-		hash = (hash * 16777619) ^ uint32(s[i])
-	}
-	return hash
+func NewFilterWithDefaultHash(expectedNumElements int, bitArraySize int) *Filter {
+	return NewFilter(expectedNumElements, bitArraySize, &DefaultHash{})
 }
 
-func (filter *Filter) addToFilter(s string) {
+func CalculateArraySize(expectedNumElements int, falsePositiveProbability float64) (int, error) {
+	if falsePositiveProbability > 1 || falsePositiveProbability <= 0 {
+		return 0, errors.New("falsePositiveProbability must be greater than 0 and smaller than 1")
+	}
+	return int(math.Ceil(-1 * (float64(expectedNumElements) * math.Log(falsePositiveProbability)) / math.Pow(math.Log(2), 2))), nil
+}
+
+func (filter *Filter) AddToFilter(s string) {
+	if filter.hashFunction == nil {
+		panic("hashFunction is nil")
+	}
 	for i := 0; i < filter.numHashFunctions; i++ {
 		hash := filter.hashFunction.Hash(fmt.Sprintf("%d%s", i, s))
 		index := hash % uint32(len(filter.bitArray))
@@ -42,9 +61,9 @@ func (filter *Filter) addToFilter(s string) {
 	}
 }
 
-func (filter *Filter) check(s string) bool {
+func (filter *Filter) Check(s string) bool {
 	for i := 0; i < filter.numHashFunctions; i++ {
-		if filter.bitArray[filter.hashFunction.Hash(fmt.Sprintf("%d%s", i, s))] == false {
+		if filter.bitArray[filter.hashFunction.Hash(fmt.Sprintf("%d%s", i, s))%uint32(len(filter.bitArray))] == false {
 			return false
 		}
 	}
