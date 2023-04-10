@@ -9,6 +9,7 @@ import (
 )
 
 type Shipment struct {
+	Id            int
 	Barcode       string
 	Sender        string
 	Receiver      string

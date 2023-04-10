@@ -90,11 +90,16 @@ func TestDefaultHash(t *testing.T) {
 	}
 
 	hashFunc := &DefaultHash{}
-
-	for _, tc := range testCases {
-		output := hashFunc.Hash(tc.input)
-		if output != tc.expected {
-			t.Errorf("DefaultHash(%q) = %d; want %d", tc.input, output, tc.expected)
+	for i := 0; i < 1000; i++ {
+		for _, tc := range testCases {
+			output1 := hashFunc.Hash(tc.input)
+			output2 := hashFunc.Hash(tc.input)
+			if output1 != output2 {
+				t.Errorf("Word(%q) = 1st hash %d; 2nd hash %d", tc.input, output1, output2)
+			}
+			if output1 != tc.expected {
+				t.Errorf("DefaultHash(%q) = %d; want %d", tc.input, output1, tc.expected)
+			}
 		}
 	}
 }

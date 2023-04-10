@@ -3,6 +3,7 @@ package bloom
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math"
 )
 
@@ -45,7 +46,7 @@ func NewFilterWithDefaultHash(expectedNumElements int, bitArraySize int) *Filter
 
 func (filter *Filter) AddToFilter(s string) {
 	if filter.hashFunction == nil {
-		panic("hashFunction is nil")
+		log.Panic("hashFunction is nil")
 	}
 	for i := 0; i < filter.numHashFunctions; i++ {
 		hash := filter.hashFunction.Hash(fmt.Sprintf("%d%s", i, s))
@@ -56,7 +57,7 @@ func (filter *Filter) AddToFilter(s string) {
 
 func (filter *Filter) Check(s string) bool {
 	if filter.hashFunction == nil {
-		panic("hashFunction is nil")
+		log.Panic("hashFunction is nil")
 	}
 	for i := 0; i < filter.numHashFunctions; i++ {
 		hash := filter.hashFunction.Hash(fmt.Sprintf("%d%s", i, s))
@@ -74,6 +75,7 @@ func CalculateArraySize(expectedNumElements int, falsePositiveProbability float6
 	}
 	return int(math.Ceil(-1 * (float64(expectedNumElements) * math.Log(falsePositiveProbability)) / math.Pow(math.Log(2), 2))), nil
 }
+
 func (filter *Filter) GetFalsePositiveProbability() float64 {
 	k := float64(filter.numHashFunctions)
 	n := float64(filter.expectedNumElements)
