@@ -23,6 +23,7 @@ func OpenConnection(config *config.Config) *sql.DB {
 	if err != nil {
 		log.Panic(err)
 	}
+
 	log.Println("Database connection open")
 	return db
 }
