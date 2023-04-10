@@ -16,6 +16,7 @@ type SqlShipmentService struct {
 }
 
 func (service *SqlShipmentService) SaveShipment(shipment *Shipment) error {
+
 	_, err := service.DB.Exec(
 		"INSERT INTO shipments (barcode, sender, receiver, is_delivered, origin, destination, created_at) "+
 			"VALUES ($1, $2, $3, $4, $5, $6, $7)",
@@ -29,6 +30,7 @@ func (service *SqlShipmentService) SaveShipment(shipment *Shipment) error {
 
 func (service *SqlShipmentService) GetShipmentById(id int) (*Shipment, error) {
 	var s Shipment
+
 	row := service.DB.QueryRow(
 		"SELECT s.id, s.barcode, s.sender, s.receiver, s.is_delivered, s.origin, s.destination, s.created_at "+
 			"FROM shipments s "+
@@ -50,9 +52,6 @@ func (service *SqlShipmentService) GetShipmentByBarcode(barcode string) (*Shipme
 }
 
 func (service *SqlShipmentService) DeleteShipmentById(id int) error {
-	_, err := service.DB.Exec(
-		"DELETE FROM barcodes "+
-			"USING shipments "+
-			"WHERE barcode_id = shipments.barcode_id AND shipments.id = $1", id)
+	_, err := service.DB.Exec("DELETE FROM shipments WHERE shipments.id = $1", id)
 	return err
 }
