@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type shipment struct {
+type Shipment struct {
 	Id            int
 	Barcode       string
 	Sender        string
@@ -19,8 +19,8 @@ type shipment struct {
 	DepartureDate time.Time
 }
 
-func NewShipment(sender, receiver, from, to string) *shipment {
-	return &shipment{
+func NewShipment(sender, receiver, from, to string) *Shipment {
+	return &Shipment{
 		Sender:        sender,
 		Receiver:      receiver,
 		Origin:        from,
@@ -30,7 +30,7 @@ func NewShipment(sender, receiver, from, to string) *shipment {
 	}
 }
 
-func (shipment *shipment) GenerateBarcode() {
+func (shipment *Shipment) GenerateBarcode() {
 	suffix := strings.ToUpper(string(shipment.Origin[0]) + string(shipment.Origin[len(shipment.Origin)-1]))
 
 	var body string

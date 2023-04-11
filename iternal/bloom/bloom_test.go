@@ -15,7 +15,7 @@ func TestFilter(t *testing.T) {
 
 	for i := 0; i < expectedNumElements; i++ {
 		if filter.Check(fmt.Sprint(i)) {
-			t.Errorf("Element %d is not expected to be in the filter", i)
+			t.Errorf("Element %d is not expected to be in the Filter", i)
 		}
 	}
 
@@ -25,13 +25,13 @@ func TestFilter(t *testing.T) {
 
 	for i := 0; i < expectedNumElements; i++ {
 		if !filter.Check(fmt.Sprint(i)) {
-			t.Errorf("Element %d is expected to be in the filter", i)
+			t.Errorf("Element %d is expected to be in the Filter", i)
 		}
 	}
 
 	for i := expectedNumElements; i < expectedNumElements+100; i++ {
 		if filter.Check(fmt.Sprint(i)) {
-			t.Errorf("Element %d is not expected to be in the filter", i)
+			t.Errorf("Element %d is not expected to be in the Filter", i)
 		}
 	}
 }

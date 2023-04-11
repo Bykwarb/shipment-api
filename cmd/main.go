@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"task/api"
 	"task/config"
+	"task/iternal/bloom"
 	"task/iternal/database"
 	"task/iternal/shipments"
 )
@@ -31,10 +32,11 @@ func createRoute(server Server) *mux.Router {
 }
 
 func main() { // Создаем канал для принятия сигналов
+	filter := bloom.NewFilterWithDefaultHash(5000000, 500000)
 	c := config.LoadConfig("config.yml")
 	db := database.OpenConnection(c)
 	defer database.CloseConnection(db)
-	service := shipments.NewShipmentService(db)
+	service := shipments.NewShipmentService(db, filter)
 	server := api.NewShipmentServer(service)
 	log.Println(fmt.Sprintf("server is started in %s:%s", c.Server.Host, c.Server.Port))
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%s", c.Server.Host, c.Server.Port), createRoute(server)))

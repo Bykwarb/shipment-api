@@ -18,7 +18,9 @@ func NewShipmentServer(service shipments.ShipmentService) *shipmentServer {
 }
 
 func (api *shipmentServer) CheckBarcodeAvailability(w http.ResponseWriter, r *http.Request) {
-
+	barcode := mux.Vars(r)["barcode"]
+	availability := api.service.CheckBarcodeAvailability(barcode)
+	returnJSONResponse(w, availability)
 }
 
 func (api *shipmentServer) CreateShipmentHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,39 +30,38 @@ func (api *shipmentServer) CreateShipmentHandler(w http.ResponseWriter, r *http.
 		http.Error(w, "Failed to decode JSON", http.StatusBadRequest)
 		return
 	}
-	shipment := shipments.NewShipment(req.Sender, req.Receiver, req.Origin, req.Destination)
-	shipment.Barcode = req.Barcode
-	api.service.SaveShipment(shipment)
-	returnJsonResponse(w, "shipments successfully created")
+	shipment := shipments.Shipment{Sender: req.sender, Receiver: req.receiver, Origin: req.origin, Destination: req.destination, Barcode: req.barcode}
+	api.service.Save(&shipment)
+	returnJSONResponse(w, response{Message: "shipments successfully created"})
 }
 
 func (api *shipmentServer) GetShipmentByIdHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
-	shipment, err := api.service.GetShipmentById(id)
+	shipment, err := api.service.GetById(id)
 	if err != nil {
-		returnJsonResponse(w, err)
+		returnJSONResponse(w, err)
 	} else {
-		returnJsonResponse(w, shipment)
+		returnJSONResponse(w, shipment)
 	}
 }
 
 func (api *shipmentServer) GetShipmentByBarcodeHandler(w http.ResponseWriter, r *http.Request) {
 	barcode := r.URL.Query().Get("barcode")
-	shipment, _ := api.service.GetShipmentByBarcode(barcode)
-	returnJsonResponse(w, shipment)
+	shipment, _ := api.service.GetByBarcode(barcode)
+	returnJSONResponse(w, shipment)
 }
 
 func (api *shipmentServer) DeleteShipmentByIdHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
-	err = api.service.DeleteShipmentById(id)
+	err = api.service.DeleteById(id)
 	if err != nil {
-		returnJsonResponse(w, err)
+		returnJSONResponse(w, err)
 	} else {
-		returnJsonResponse(w, "shipment successfully deleted")
+		returnJSONResponse(w, response{Message: "shipment successfully deleted"})
 	}
 }
 
-func returnJsonResponse(w http.ResponseWriter, v interface{}) {
+func returnJSONResponse(w http.ResponseWriter, v interface{}) {
 	js, err := json.Marshal(v)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -71,11 +72,15 @@ func returnJsonResponse(w http.ResponseWriter, v interface{}) {
 }
 
 type shipmentRequest struct {
-	Barcode       string
-	Sender        string
-	Receiver      string
-	IsDelivered   bool
-	Origin        string
-	Destination   string
-	DepartureDate time.Time
+	barcode       string    `json:"barcode"`
+	sender        string    `json:"sender"`
+	receiver      string    `json:"receiver"`
+	isDelivered   bool      `json:"isDelivered"`
+	origin        string    `json:"origin"`
+	destination   string    `json:"destination"`
+	departureDate time.Time `json:"departureDate"`
+}
+
+type response struct {
+	Message string `json:"message"`
 }
