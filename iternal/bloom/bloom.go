@@ -46,7 +46,7 @@ func NewFilterWithDefaultHash(expectedNumElements int, bitArraySize int) *Filter
 
 func (filter *Filter) AddToFilter(s string) {
 	if filter.hashFunction == nil {
-		log.Panic("hashFunction is nil")
+		log.Println("hashFunction is nil")
 	}
 	for i := 0; i < filter.numHashFunctions; i++ {
 		hash := filter.hashFunction.Hash(fmt.Sprintf("%d%s", i, s))
@@ -57,7 +57,8 @@ func (filter *Filter) AddToFilter(s string) {
 
 func (filter *Filter) Check(s string) bool {
 	if filter.hashFunction == nil {
-		log.Panic("hashFunction is nil")
+		log.Println("hashFunction is nil")
+		return false
 	}
 	for i := 0; i < filter.numHashFunctions; i++ {
 		hash := filter.hashFunction.Hash(fmt.Sprintf("%d%s", i, s))

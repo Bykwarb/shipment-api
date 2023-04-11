@@ -3,6 +3,7 @@ package shipments
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"task/iternal/bloom"
 )
 
@@ -37,13 +38,16 @@ func (service *sqlShipmentService) Save(shipment *Shipment) error {
 			shipment.Barcode, shipment.Sender, shipment.Receiver, shipment.IsDelivered, shipment.Origin, shipment.Destination, shipment.CreatedAt)
 
 		if err != nil {
+			log.Printf("failed to save shipment: %v", err)
 			return fmt.Errorf("failed to save shipment: %v", err)
 		}
 
+		log.Printf("shipment saved: %v", shipment)
 		return nil
 	}
 
-	return fmt.Errorf("barcode: %s already exists in the system", shipment.Barcode)
+	log.Printf("barcode %s already exists in the system", shipment.Barcode)
+	return fmt.Errorf("barcode %s already exists in the system", shipment.Barcode)
 }
 
 func (service *sqlShipmentService) GetById(id int) (*Shipment, error) {
@@ -56,9 +60,11 @@ func (service *sqlShipmentService) GetById(id int) (*Shipment, error) {
 		id)
 	err := row.Scan(&s.Id, &s.Barcode, &s.Sender, &s.Receiver, &s.IsDelivered, &s.Origin, &s.Destination, &s.CreatedAt)
 	if err != nil {
+		log.Printf("failed to scan shipment: %v", err)
 		return nil, fmt.Errorf("failed to scan shipment: %v", err)
 	}
 
+	log.Printf("got shipment by id: %v", s)
 	return &s, nil
 }
 
@@ -72,21 +78,26 @@ func (service *sqlShipmentService) GetByBarcode(barcode string) (*Shipment, erro
 
 	err := row.Scan(&s.Id, &s.Barcode, &s.Sender, &s.Receiver, &s.IsDelivered, &s.Origin, &s.Destination, &s.CreatedAt)
 	if err != nil {
+		log.Printf("failed to get shipment: %v", err)
 		return nil, fmt.Errorf("failed to get shipment: %v", err)
 	}
 
+	log.Printf("got shipment by barcode: %v", s)
 	return &s, nil
 }
 
 func (service *sqlShipmentService) DeleteById(id int) error {
 	_, err := service.DB.Exec("DELETE FROM shipments WHERE id = $1", id)
 	if err != nil {
+		log.Printf("failed to delete shipment with id: %d, error: %v", id, err)
 		return fmt.Errorf("failed to delete shipment with id: %d, error: %v", id, err)
 	}
 
+	log.Printf("shipment with id: %d has been deleted", id)
 	return nil
 }
 
 func (service *sqlShipmentService) CheckBarcodeAvailability(barcode string) bool {
+	log.Printf("check barcode: %s availability", barcode)
 	return service.Filter.Check(barcode)
 }

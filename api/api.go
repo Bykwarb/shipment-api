@@ -20,7 +20,7 @@ func NewShipmentServer(service shipments.ShipmentService) *shipmentServer {
 func (api *shipmentServer) CheckBarcodeAvailability(w http.ResponseWriter, r *http.Request) {
 	barcode := mux.Vars(r)["barcode"]
 	availability := api.service.CheckBarcodeAvailability(barcode)
-	returnJSONResponse(w, availability)
+	returnJSONResponse(w, availabilityResponse{availability})
 }
 
 func (api *shipmentServer) CreateShipmentHandler(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +32,7 @@ func (api *shipmentServer) CreateShipmentHandler(w http.ResponseWriter, r *http.
 	}
 	shipment := shipments.Shipment{Sender: req.sender, Receiver: req.receiver, Origin: req.origin, Destination: req.destination, Barcode: req.barcode}
 	api.service.Save(&shipment)
-	returnJSONResponse(w, response{Message: "shipments successfully created"})
+	returnJSONResponse(w, response{message: "shipments successfully created"})
 }
 
 func (api *shipmentServer) GetShipmentByIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +57,7 @@ func (api *shipmentServer) DeleteShipmentByIdHandler(w http.ResponseWriter, r *h
 	if err != nil {
 		returnJSONResponse(w, err)
 	} else {
-		returnJSONResponse(w, response{Message: "shipment successfully deleted"})
+		returnJSONResponse(w, response{message: "shipment successfully deleted"})
 	}
 }
 
@@ -82,5 +82,9 @@ type shipmentRequest struct {
 }
 
 type response struct {
-	Message string `json:"message"`
+	message string `json:"message"`
+}
+
+type availabilityResponse struct {
+	isAvailable bool `json:"isAvailable"`
 }
