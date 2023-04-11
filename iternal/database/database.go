@@ -24,7 +24,7 @@ func OpenConnection(config *config.Config) *sql.DB {
 		log.Panic(err)
 	}
 
-	log.Println("Database connection open")
+	log.Println("database connection open")
 	return db
 }
 
@@ -35,5 +35,5 @@ func CloseConnection(db *sql.DB) {
 		log.Panic(err)
 	}
 
-	log.Println("Database connection closed")
+	log.Println("database connection closed")
 }
