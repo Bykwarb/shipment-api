@@ -9,24 +9,24 @@ import (
 )
 
 type Shipment struct {
-	Id            int
-	Barcode       string
-	Sender        string
-	Receiver      string
-	IsDelivered   bool
-	Origin        string
-	Destination   string
-	DepartureDate time.Time
+	Id          int
+	Barcode     string
+	Sender      string
+	Receiver    string
+	IsDelivered bool
+	Origin      string
+	Destination string
+	CreatedAt   time.Time
 }
 
 func NewShipment(sender, receiver, from, to string) *Shipment {
 	return &Shipment{
-		Sender:        sender,
-		Receiver:      receiver,
-		Origin:        from,
-		Destination:   to,
-		IsDelivered:   false,
-		DepartureDate: time.Now(),
+		Sender:      sender,
+		Receiver:    receiver,
+		Origin:      from,
+		Destination: to,
+		IsDelivered: false,
+		CreatedAt:   time.Now(),
 	}
 }
 
