@@ -22,17 +22,17 @@ func (*DefaultHash) Hash(s string) uint32 {
 	return hash
 }
 
-type Filter struct {
+type filter struct {
 	bitArray            []bool
 	numHashFunctions    int
 	expectedNumElements int
 	hashFunction        HashFunction
 }
 
-func NewFilter(expectedNumElements int, bitArraySize int, hashFunction HashFunction) *Filter {
+func NewFilter(expectedNumElements int, bitArraySize int, hashFunction HashFunction) *filter {
 	bitArray := make([]bool, bitArraySize)
 	numHashFunctions := int(float64(bitArraySize) / float64(expectedNumElements) * math.Log(2))
-	return &Filter{
+	return &filter{
 		bitArray:            bitArray,
 		numHashFunctions:    numHashFunctions,
 		expectedNumElements: expectedNumElements,
@@ -40,11 +40,11 @@ func NewFilter(expectedNumElements int, bitArraySize int, hashFunction HashFunct
 	}
 }
 
-func NewFilterWithDefaultHash(expectedNumElements int, bitArraySize int) *Filter {
+func NewFilterWithDefaultHash(expectedNumElements int, bitArraySize int) *filter {
 	return NewFilter(expectedNumElements, bitArraySize, &DefaultHash{})
 }
 
-func (filter *Filter) AddToFilter(s string) {
+func (filter *filter) AddToFilter(s string) {
 	if filter.hashFunction == nil {
 		log.Panic("hashFunction is nil")
 	}
@@ -55,7 +55,7 @@ func (filter *Filter) AddToFilter(s string) {
 	}
 }
 
-func (filter *Filter) Check(s string) bool {
+func (filter *filter) Check(s string) bool {
 	if filter.hashFunction == nil {
 		log.Panic("hashFunction is nil")
 	}
@@ -76,7 +76,7 @@ func CalculateArraySize(expectedNumElements int, falsePositiveProbability float6
 	return int(math.Ceil(-1 * (float64(expectedNumElements) * math.Log(falsePositiveProbability)) / math.Pow(math.Log(2), 2))), nil
 }
 
-func (filter *Filter) GetFalsePositiveProbability() float64 {
+func (filter *filter) GetFalsePositiveProbability() float64 {
 	k := float64(filter.numHashFunctions)
 	n := float64(filter.expectedNumElements)
 	m := float64(len(filter.bitArray))

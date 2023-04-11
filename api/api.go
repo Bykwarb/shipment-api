@@ -13,11 +13,12 @@ type shipmentApi struct {
 func NewShipmentApi(service shipments.ShipmentService) *shipmentApi {
 	return &shipmentApi{&service}
 }
-func (api *shipmentApi) checkBarcodeAvailability() {
+
+func (api *shipmentApi) checkBarcodeAvailability(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (api *shipmentApi) shipmentHandler() {
+func (api *shipmentApi) shipmentHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 

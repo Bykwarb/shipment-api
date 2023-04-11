@@ -5,17 +5,21 @@ import (
 )
 
 type ShipmentService interface {
-	SaveShipment(shipment *Shipment) error
-	GetShipmentById(id int) (*Shipment, error)
-	GetShipmentByBarcode(barcode string) (*Shipment, error)
+	SaveShipment(shipment *shipment) error
+	GetShipmentById(id int) (*shipment, error)
+	GetShipmentByBarcode(barcode string) (*shipment, error)
 	DeleteShipmentById(id int) error
 }
 
-type SqlShipmentService struct {
+type sqlShipmentService struct {
 	DB *sql.DB
 }
 
-func (service *SqlShipmentService) SaveShipment(shipment *Shipment) error {
+func NewShipmentService(db *sql.DB) *sqlShipmentService {
+	return &sqlShipmentService{DB: db}
+}
+
+func (service *sqlShipmentService) SaveShipment(shipment *shipment) error {
 
 	_, err := service.DB.Exec(
 		"INSERT INTO shipments (barcode, sender, receiver, is_delivered, origin, destination, created_at) "+
@@ -28,8 +32,8 @@ func (service *SqlShipmentService) SaveShipment(shipment *Shipment) error {
 	return nil
 }
 
-func (service *SqlShipmentService) GetShipmentById(id int) (*Shipment, error) {
-	var s Shipment
+func (service *sqlShipmentService) GetShipmentById(id int) (*shipment, error) {
+	var s shipment
 
 	row := service.DB.QueryRow(
 		"SELECT s.id, s.barcode, s.sender, s.receiver, s.is_delivered, s.origin, s.destination, s.created_at "+
@@ -39,8 +43,8 @@ func (service *SqlShipmentService) GetShipmentById(id int) (*Shipment, error) {
 	return &s, err
 }
 
-func (service *SqlShipmentService) GetShipmentByBarcode(barcode string) (*Shipment, error) {
-	var s Shipment
+func (service *sqlShipmentService) GetShipmentByBarcode(barcode string) (*shipment, error) {
+	var s shipment
 
 	row := service.DB.QueryRow(
 		"SELECT s.id, s.barcode, s.sender, s.receiver, s.is_delivered, s.origin, s.destination, s.created_at "+
@@ -51,7 +55,7 @@ func (service *SqlShipmentService) GetShipmentByBarcode(barcode string) (*Shipme
 	return &s, err
 }
 
-func (service *SqlShipmentService) DeleteShipmentById(id int) error {
+func (service *sqlShipmentService) DeleteShipmentById(id int) error {
 	_, err := service.DB.Exec("DELETE FROM shipments WHERE shipments.id = $1", id)
 	return err
 }
