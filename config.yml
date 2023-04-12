@@ -8,3 +8,8 @@ database:
   user: postgres
   password: Xxagrorog123
   dbname: shipment_api
+
+filter:
+  enabled: true
+  expected_num_elements: 5000000
+  false_positive_probability: 0.1

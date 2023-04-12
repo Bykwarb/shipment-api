@@ -30,7 +30,7 @@ func NewSQLShipmentService(db *sql.DB, filter *bloom.Filter) *sqlShipmentService
 func (service *sqlShipmentService) Save(shipment *Shipment) error {
 	availability := service.CheckBarcodeAvailability(shipment.Barcode)
 
-	if availability {
+	if availability == false {
 		service.Filter.AddToFilter(shipment.Barcode)
 		_, err := service.DB.Exec(
 			"INSERT INTO shipments (barcode, sender, receiver, is_delivered, origin, destination, created_at) "+

@@ -18,6 +18,11 @@ type Config struct {
 		Password string
 		DBName   string
 	}
+	Filter struct {
+		Enabled                  bool
+		ExpectedNumElements      int     `yaml:"expected_num_elements"`
+		FalsePositiveProbability float64 `yaml:"false_positive_probability"`
+	}
 }
 
 func LoadConfig(path string) *Config {

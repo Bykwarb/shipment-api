@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"strconv"
 	"task/iternal/shipments"
@@ -20,26 +21,28 @@ func NewShipmentServer(service shipments.ShipmentService) *shipmentServer {
 func (api *shipmentServer) CheckBarcodeAvailability(w http.ResponseWriter, r *http.Request) {
 	barcode := mux.Vars(r)["barcode"]
 	availability := api.service.CheckBarcodeAvailability(barcode)
-	returnJSONResponse(w, availabilityResponse{availability})
+	returnJSONResponse(w, availability)
+	//returnJSONResponse(w, availabilityResponse{availability})
 }
 
 func (api *shipmentServer) CreateShipmentHandler(w http.ResponseWriter, r *http.Request) {
 	var req shipmentRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		http.Error(w, "Failed to decode JSON", http.StatusBadRequest)
-		return
+		returnJSONResponse(w, response{message: "failed to decode JSON"})
+	} else {
+		log.Print(req)
+		shipment := shipments.Shipment{Sender: req.sender, Receiver: req.receiver, Origin: req.origin, Destination: req.destination, Barcode: req.barcode}
+		api.service.Save(&shipment)
+		returnJSONResponse(w, response{message: "shipments successfully created"})
 	}
-	shipment := shipments.Shipment{Sender: req.sender, Receiver: req.receiver, Origin: req.origin, Destination: req.destination, Barcode: req.barcode}
-	api.service.Save(&shipment)
-	returnJSONResponse(w, response{message: "shipments successfully created"})
 }
 
 func (api *shipmentServer) GetShipmentByIdHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	shipment, err := api.service.GetById(id)
 	if err != nil {
-		returnJSONResponse(w, err)
+		returnJSONResponse(w, response{message: err.Error()})
 	} else {
 		returnJSONResponse(w, shipment)
 	}
@@ -55,7 +58,7 @@ func (api *shipmentServer) DeleteShipmentByIdHandler(w http.ResponseWriter, r *h
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	err = api.service.DeleteById(id)
 	if err != nil {
-		returnJSONResponse(w, err)
+		returnJSONResponse(w, response{message: "failed to delete shipment"})
 	} else {
 		returnJSONResponse(w, response{message: "shipment successfully deleted"})
 	}
