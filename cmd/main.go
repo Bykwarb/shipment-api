@@ -29,7 +29,7 @@ var conf *config.Config
 func init() {
 	conf = config.LoadConfig("config.yml")
 	db = database.OpenConnection(conf)
-	db.SetMaxOpenConns(10)
+	db.SetMaxOpenConns(100)
 	if conf.Filter.Enabled {
 		expectedNumElements := conf.Filter.ExpectedNumElements
 		falsePositiveProbability := conf.Filter.FalsePositiveProbability
@@ -40,7 +40,7 @@ func init() {
 		filter = bloom.NewFilterWithDefaultHash(expectedNumElements, filterArraySize)
 		var wg sync.WaitGroup
 		var mutex sync.Mutex
-		wg.Add(10)
+		wg.Add(100)
 		fillFilter(&wg, &mutex, filter)
 		wg.Wait()
 
@@ -68,7 +68,7 @@ func createRoute(server Server) *mux.Router {
 
 func fillFilter(wg *sync.WaitGroup, mutex *sync.Mutex, filter *bloom.Filter) {
 	num := conf.Filter.ExpectedNumElements
-	numRanges := 10
+	numRanges := 100
 	rangeSize := num / numRanges
 	for i := 0; i < numRanges; i++ {
 		start := i * rangeSize

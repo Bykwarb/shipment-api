@@ -11,5 +11,5 @@ database:
 
 filter:
   enabled: true
-  expected_num_elements: 5000000
+  expected_num_elements: 10000000
   false_positive_probability: 0.1
