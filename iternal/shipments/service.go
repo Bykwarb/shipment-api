@@ -13,7 +13,7 @@ type ShipmentService interface {
 	GetById(id int) (*Shipment, error)
 	GetByBarcode(barcode string) (*Shipment, error)
 	DeleteById(id int) error
-	CheckBarcodeAvailability(barcode string) bool
+	CheckBarcodeUnavailable(barcode string) bool
 }
 
 type sqlShipmentService struct {
@@ -32,7 +32,10 @@ func (service *sqlShipmentService) Save(shipment *Shipment) error {
 	if service.filter.Check(shipment.Barcode) {
 		return errors.New("barcode already exists")
 	}
-
+	if len(shipment.Barcode) > 25 || len(shipment.Barcode) < 13 {
+		log.Printf("barcode length must be <= then 25 and >= 13, barcode: %s", shipment.Barcode)
+		return fmt.Errorf("barcode length must be <= then 25 and >= 13")
+	}
 	if _, err := service.db.Exec("INSERT INTO shipments (barcode, sender, receiver, is_delivered, origin, destination, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
 		shipment.Barcode, shipment.Sender, shipment.Receiver, shipment.IsDelivered, shipment.Origin, shipment.Destination, shipment.CreatedAt); err != nil {
 		log.Printf("failed to save shipment: %v", err)
@@ -57,7 +60,7 @@ func (service *sqlShipmentService) GetById(id int) (*Shipment, error) {
 
 func (service *sqlShipmentService) GetByBarcode(barcode string) (*Shipment, error) {
 	var s Shipment
-	if err := service.db.QueryRow("SELECT s.id, s.barcode, s.sender, s.receiver, s.is_delivered, s.origin, s.destination, s.created_at FROM shipments s WHERE s.barcode = $1", barcode).
+	if err := service.db.QueryRow("SELECT id, barcode, sender, receiver, is_delivered, origin, destination, created_at FROM shipments WHERE barcode = $1", barcode).
 		Scan(&s.Id, &s.Barcode, &s.Sender, &s.Receiver, &s.IsDelivered, &s.Origin, &s.Destination, &s.CreatedAt); err != nil {
 		log.Printf("failed to get shipment: %v", err)
 		return nil, fmt.Errorf("failed to get shipment: %v", err)
@@ -76,7 +79,10 @@ func (service *sqlShipmentService) DeleteById(id int) error {
 	return nil
 }
 
-func (service *sqlShipmentService) CheckBarcodeAvailability(barcode string) bool {
+func (service *sqlShipmentService) CheckBarcodeUnavailable(barcode string) bool {
 	log.Printf("check barcode: %s availability", barcode)
+	if len(barcode) > 25 || len(barcode) < 13 {
+		return false
+	}
 	return service.filter.Check(barcode)
 }

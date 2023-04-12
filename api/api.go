@@ -20,7 +20,7 @@ func NewShipmentServer(service shipments.ShipmentService) *shipmentServer {
 
 func (api *shipmentServer) CheckBarcodeAvailability(w http.ResponseWriter, r *http.Request) {
 	barcode := mux.Vars(r)["barcode"]
-	availability := api.service.CheckBarcodeAvailability(barcode)
+	availability := api.service.CheckBarcodeUnavailable(barcode)
 	returnJSONResponse(w, AvailabilityResponse{Unavailable: availability})
 }
 
