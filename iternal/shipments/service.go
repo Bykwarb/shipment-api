@@ -32,40 +32,51 @@ func (service *sqlShipmentService) Save(shipment *Shipment) error {
 	if service.filter.Check(shipment.Barcode) {
 		return errors.New("barcode already exists")
 	}
+
 	if len(shipment.Barcode) > 25 || len(shipment.Barcode) < 13 {
 		log.Printf("barcode length must be <= then 25 and >= 13, barcode: %s", shipment.Barcode)
 		return fmt.Errorf("barcode length must be <= then 25 and >= 13")
 	}
+
 	if _, err := service.db.Exec("INSERT INTO shipments (barcode, sender, receiver, is_delivered, origin, destination, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
 		shipment.Barcode, shipment.Sender, shipment.Receiver, shipment.IsDelivered, shipment.Origin, shipment.Destination, shipment.CreatedAt); err != nil {
-		log.Printf("failed to save shipment: %v", err)
-		return fmt.Errorf("failed to save shipment: %v", err)
+		log.Println("failed to save shipment")
+		return errors.New("failed to save shipment")
 	}
+
 	service.filter.AddToFilter(shipment.Barcode)
+
 	log.Printf("shipment saved: %v", shipment)
+
 	return nil
 }
 
 func (service *sqlShipmentService) GetById(id int) (*Shipment, error) {
 	var shipment Shipment
+
 	if err := service.db.QueryRow("SELECT id, barcode, sender, receiver, is_delivered, origin, destination, created_at FROM shipments WHERE id = $1", id).
 		Scan(&shipment.Id, &shipment.Barcode, &shipment.Sender, &shipment.Receiver, &shipment.IsDelivered, &shipment.Origin, &shipment.Destination, &shipment.CreatedAt); err != nil {
-		log.Printf("failed to get shipment by ID: %v", err)
-		return nil, fmt.Errorf("failed to get shipment by ID: %v", err)
+
+		log.Printf("failed to get shipment with Id: %d", id)
+		return nil, fmt.Errorf("failed to get shipment with Id: %d", id)
 	}
 
-	log.Printf("got shipment by ID: %v", shipment)
+	log.Printf("got shipment by Id: %v", shipment)
+
 	return &shipment, nil
 }
 
 func (service *sqlShipmentService) GetByBarcode(barcode string) (*Shipment, error) {
 	var s Shipment
+
 	if err := service.db.QueryRow("SELECT id, barcode, sender, receiver, is_delivered, origin, destination, created_at FROM shipments WHERE barcode = $1", barcode).
 		Scan(&s.Id, &s.Barcode, &s.Sender, &s.Receiver, &s.IsDelivered, &s.Origin, &s.Destination, &s.CreatedAt); err != nil {
-		log.Printf("failed to get shipment: %v", err)
-		return nil, fmt.Errorf("failed to get shipment: %v", err)
+		log.Printf("failed to get shipment with barcode: %s", barcode)
+		return nil, fmt.Errorf("failed to get shipment with barcode: %s", barcode)
 	}
+
 	log.Printf("got shipment by barcode: %v", s)
+
 	return &s, nil
 }
 

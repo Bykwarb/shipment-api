@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"task/iternal/shipments"
 	"testing"
@@ -41,31 +43,33 @@ func TestShipmentServer_CheckBarcodeAvailability(t *testing.T) {
 }
 
 func TestShipmentServer_GetShipmentByIdHandler(t *testing.T) {
-	expectedResp := *shipments.NewShipment("TEST", "TEST", "TEST", "TEST")
+	expectedResp := shipments.NewShipment("TEST", "TEST", "TEST", "TEST")
 	expectedResp.Barcode = "TEST1003TEST1"
 	expectedResp.Id = 1
+	expectedResp.CreatedAt = time.Time{}
 	service := &MockService{}
 	server := NewShipmentServer(service)
-	id := 1
-	req, err := http.NewRequest("GET", fmt.Sprintf("/api/v1/shipment/{%d}", id), nil)
+
+	req, err := http.NewRequest("GET", "/api/v1/shipment/1", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
 	rr := httptest.NewRecorder()
 
-	handler := http.HandlerFunc(server.GetShipmentByIdHandler)
-	handler.ServeHTTP(rr, req)
-
+	router := mux.NewRouter()
+	router.HandleFunc("/api/v1/shipment/{id}", server.GetShipmentByIdHandler).Methods("GET")
+	router.StrictSlash(true)
+	router.ServeHTTP(rr, req)
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
-	fmt.Println(rr.Body)
 
 	var resp shipments.Shipment
 	if err := json.NewDecoder(rr.Body).Decode(&resp); err != nil {
 		t.Errorf("failed to decode response: %v", err)
 	}
-	if resp != expectedResp {
+
+	if !reflect.DeepEqual(resp, *expectedResp) {
 		t.Errorf("handler returned wrong shipment: got %v want %v", resp, expectedResp)
 	}
 }
@@ -141,9 +145,10 @@ func TestShipmentServer_DeleteShipmentByIdHandler(t *testing.T) {
 		t.Fatalf("failed to create request: %v", err)
 	}
 	rr := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(server.DeleteShipmentByIdHandler)
-	handler.ServeHTTP(rr, req)
+	router := mux.NewRouter()
+	router.HandleFunc("/api/v1/shipment/{id}", server.DeleteShipmentByIdHandler).Methods("DELETE")
+	router.StrictSlash(true)
+	router.ServeHTTP(rr, req)
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
