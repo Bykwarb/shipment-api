@@ -106,7 +106,6 @@ func TestSqlShipmentService_Save(t *testing.T) {
 		shipment.CreatedAt,
 	).WillReturnResult(sqlmock.NewResult(1, 1))
 
-	// Test the method
 	err = service.Save(shipment)
 	if err != nil {
 		t.Errorf("error was not expected while saving shipment: %v", err)
@@ -130,7 +129,6 @@ func TestShipment_GenerateBarcode(t *testing.T) {
 		t.Errorf("barcode length must be <= then 25 and >= 13, barcode: %s", shipment.Barcode)
 	}
 
-	// Check if prefix and suffix are correct
 	expectedPrefix := "LS"
 	if shipment.Barcode[len(shipment.Barcode)-2:] != expectedPrefix {
 		t.Errorf("generated prefix is incorrect, expected %s but got %s", expectedPrefix, shipment.Barcode[len(shipment.Barcode)-2:])
