@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"task/config"
+
+	"task/iternal/model"
 
 	_ "github.com/lib/pq"
 )
 
-func OpenConnection(config *config.Config) *sql.DB {
+func OpenConnection(config *model.Config) *sql.DB {
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		config.Database.Host,

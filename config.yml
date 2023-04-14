@@ -10,6 +10,5 @@ database:
   dbname: shipment_api
 
 filter:
-  enabled: true
   expected_num_elements: 10000000
   false_positive_probability: 0.1
