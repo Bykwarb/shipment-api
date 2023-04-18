@@ -1,4 +1,4 @@
-module task
+module github.com/test-task/shipment-api
 
 go 1.20
 
